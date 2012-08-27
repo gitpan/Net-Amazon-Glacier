@@ -22,4 +22,4 @@ requires:
   LWP::UserAgent: 0
   Net::Amazon::Signature: 0
   Test::More: 0
-version: 0.03
+version: 0.04
