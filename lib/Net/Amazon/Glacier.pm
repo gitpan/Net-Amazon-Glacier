@@ -19,11 +19,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 
 =head1 SYNOPSIS
@@ -114,10 +114,6 @@ sub list_vaults {
 	return $self->_decode_and_handle_response( $res );
 }
 
-=head1
-
-
-
 # helper functions
 
 sub _decode_and_handle_response {
@@ -174,6 +170,10 @@ The following parts of Amazon's API have not  been implemented in this module. T
 =item * Job operations
 
 =back
+
+=head1 SEE ALSO
+
+See also Victor Efimov's MT::AWS::Glacier, an application for AWS Glacier synchronization. It is available at L<https://github.com/vsespb/mt-aws-glacier>.
 
 =head1 AUTHOR
 

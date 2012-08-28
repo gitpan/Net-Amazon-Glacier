@@ -1,7 +1,11 @@
 Revision history for Net-Amazon-Glacier
 
+0.06	2012-08-28
+		Fixed documentation syntax error.
+		Mentioned MT::AWS::Glacier in documentation.
+
 0.05	2012-08-28
-		Fixed dependency typo
+		Fixed dependency typo.
 
 0.04	2012-08-27
 		Fixed name of sibling module Net::Amazon::Signature::V4 due to a namespace clash.
