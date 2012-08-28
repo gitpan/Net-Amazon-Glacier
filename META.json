@@ -34,11 +34,11 @@
          "requires" : {
             "JSON::PP" : "0",
             "LWP::UserAgent" : "0",
-            "Net::Amazon::Signature" : "0",
+            "Net::Amazon::Signature::V4" : "0",
             "Test::More" : "0"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.04"
+   "version" : "0.05"
 }
