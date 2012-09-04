@@ -18,9 +18,12 @@ no_index:
     - t
     - inc
 requires:
+  Digest::SHA: 0
+  File::Slurp: 0
   JSON::PP: 0
   LWP::Protocol::https: 0
   LWP::UserAgent: 0
   Net::Amazon::Signature::V4: 0
+  Net::Amazon::TreeHash: 0
   Test::More: 0
-version: 0.08
+version: 0.09

@@ -15,6 +15,9 @@ WriteMakefile(
     PREREQ_PM => {
         'Test::More' => 0,
 		'Net::Amazon::Signature::V4' => 0,
+		'Net::Amazon::TreeHash' => 0,
+		'Digest::SHA' => 0,
+		'File::Slurp' => 0,
 		'JSON::PP' => 0,
 		'LWP::UserAgent' => 0,
 		'LWP::Protocol::https' => 0,

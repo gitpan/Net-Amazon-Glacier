@@ -6,12 +6,16 @@ use warnings;
 use feature 'say';
 
 use Net::Amazon::Signature::V4;
+use Net::Amazon::TreeHash;
 
 use HTTP::Request;
 use LWP::UserAgent;
 use JSON::PP;
 use POSIX qw/strftime/;
+use Digest::SHA qw/sha256_hex/;
+use File::Slurp;
 use Carp;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -19,11 +23,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 
 =head1 SYNOPSIS
@@ -71,6 +75,7 @@ Creates a vault with the specified name. Returns true on success, false on failu
 
 sub create_vault {
 	my ( $self, $vault_name ) = @_;
+	croak "no vault name given" unless $vault_name;
 	my $res = $self->_send_receive( PUT => "/-/vaults/$vault_name" );
 	return $res->is_success;
 }
@@ -83,6 +88,7 @@ Deletes the specified vault. Returns true on success, false on failure.
 
 sub delete_vault {
 	my ( $self, $vault_name ) = @_;
+	croak "no vault name given" unless $vault_name;
 	my $res = $self->_send_receive( DELETE => "/-/vaults/$vault_name" );
 	return $res->is_success;
 }
@@ -95,6 +101,7 @@ Fetches information about the specified vault. Returns a hash reference with the
 
 sub describe_vault {
 	my ( $self, $vault_name ) = @_;
+	croak "no vault name given" unless $vault_name;
 	my $res = $self->_send_receive( GET => "/-/vaults/$vault_name" );
 	return $self->_decode_and_handle_response( $res );
 }
@@ -112,6 +119,46 @@ sub list_vaults {
 	$uri .= "&marker=$marker" if defined $marker;
 	my $res = $self->_send_receive( GET => $uri );
 	return $self->_decode_and_handle_response( $res );
+}
+
+=head1 ARCHIVE OPERATIONS
+
+=head2 upload_archive( $vault_name, $archive_path, [ $description ] )
+
+Uploads an archive to the specified vault. $archive_path is the local path to any file smaller than 4GB. For larger files, see multi-part upload. An archive description of up to 1024 printable ASCII characters can be supplied. Returns the Amazon-generated archive ID on success, or false on failure.
+
+=cut
+
+sub upload_archive {
+	my ( $self, $vault_name, $archive_path, $description ) = @_;
+	croak "no vault name given" unless $vault_name;
+	croak "no archive path given" unless $archive_path;
+	croak 'archive path is not a file' unless -f $archive_path;
+	$description //= '';
+	my $content = read_file( $archive_path );
+
+	my $th = Net::Amazon::TreeHash->new();
+	open( my $content_fh, '<', $archive_path ) or croak $!;
+	$th->eat_file( $content_fh );
+	close $content_fh;
+
+	my $res = $self->_send_receive(
+		POST => "/-/vaults/$vault_name/archives", 
+		[
+			'x-amz-archive-description' => $description,
+			'x-amz-sha256-tree-hash' => $th->get_final_hash(),
+			'x-amz-content-sha256' => sha256_hex( $content ),
+		],
+		$content
+	);
+	return 0 unless $res->is_success;
+	if ( $res->header('location') =~ m{^/([^/]+)/vaults/([^/]+)/archives/(.*)$} ) {
+		my ( $rec_uid, $rec_vault_name, $rec_archive_id ) = ( $1, $2, $3 );
+		return $rec_archive_id;
+	} else {
+		carp 'request succeeded, but reported archive location does not match regex: ' . $res->header('location');
+		return 0;
+	}
 }
 
 # helper functions
@@ -132,16 +179,15 @@ sub _send_receive {
 }
 
 sub _craft_request {
-	my ( $self, $method, $url ) = @_;
+	my ( $self, $method, $url, $header, $content ) = @_;
 	my $host = 'glacier.'.$self->{region}.'.amazonaws.com';
-	my $req = HTTP::Request->new(
-		$method => 'https://' . $host . $url,
-		[
-			'x-amz-glacier-version' => '2012-06-01',
-			'Host' => $host,
-			'Date' => strftime( '%Y%m%dT%H%M%SZ', gmtime ),
-		]
-	);
+	my $total_header = [
+		'x-amz-glacier-version' => '2012-06-01',
+		'Host' => $host,
+		'Date' => strftime( '%Y%m%dT%H%M%SZ', gmtime ),
+		$header ? @$header : ()
+	];
+	my $req = HTTP::Request->new( $method => "https://$host$url", $total_header, $content);
 	my $signed_req = $self->{sig}->sign( $req );
 	return $signed_req;
 }
@@ -150,20 +196,22 @@ sub _send_request {
 	my ( $self, $req ) = @_;
 	my $res = $self->{ua}->request( $req );
 	if ( $res->is_error ) {
-		carp sprintf 'Non-successful response: %s (%s)', $res->status_line, $res->decoded_content;
+		my $error = decode_json( $res->decoded_content );
+		carp sprintf 'Non-successful response: %s (%s)', $res->status_line, $error->{code};
+		carp decode_json( $res->decoded_content )->{message};
 	}
 	return $res;
 }
 
 =head1 NOT IMPLEMENTED
 
-The following parts of Amazon's API have not  been implemented in this module. This is mainly because the author hasn't had a use for them yet. If you do implement them, feel free to send me the patch.
+The following parts of Amazon's API have not yet been implemented. This is mainly because the author hasn't had a use for them yet. If you do implement them, feel free to send a patch.
 
 =over 4
 
 =item * PUT/GET/DELETE vault notifications
 
-=item * Archive operations
+=item * Archive deletion
 
 =item * Multipart upload operations
 

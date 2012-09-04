@@ -1,5 +1,9 @@
 Revision history for Net-Amazon-Glacier
 
+0.09	2012-09-04
+		Implemented upload_archive().
+		Added argument checks for most methods.
+
 0.08	2012-09-04
 		Default to HTTPS
 
