@@ -17,6 +17,7 @@ WriteMakefile(
 		'Net::Amazon::Signature::V4' => 0,
 		'JSON::PP' => 0,
 		'LWP::UserAgent' => 0,
+		'LWP::Protocol::https' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Net-Amazon-Glacier-*' },

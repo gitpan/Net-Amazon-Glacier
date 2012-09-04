@@ -19,11 +19,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 
 =head1 SYNOPSIS
@@ -135,7 +135,7 @@ sub _craft_request {
 	my ( $self, $method, $url ) = @_;
 	my $host = 'glacier.'.$self->{region}.'.amazonaws.com';
 	my $req = HTTP::Request->new(
-		$method => 'http://' . $host . $url,
+		$method => 'https://' . $host . $url,
 		[
 			'x-amz-glacier-version' => '2012-06-01',
 			'Host' => $host,
