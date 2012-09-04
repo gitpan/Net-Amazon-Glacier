@@ -19,11 +19,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 
 =head1 SYNOPSIS
@@ -56,7 +56,7 @@ sub new {
 	my $self = {
 		region => $region,
 		ua     => LWP::UserAgent->new(),
-		sig    => Net::Amazon::Signature->new( $account_id, $secret, $region, 'glacier' ),
+		sig    => Net::Amazon::Signature::V4->new( $account_id, $secret, $region, 'glacier' ),
 	};
 	bless $self, $class;
 }
