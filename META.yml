@@ -26,4 +26,4 @@ requires:
   Net::Amazon::Signature::V4: 0
   Net::Amazon::TreeHash: 0
   Test::More: 0
-version: 0.09
+version: 0.10

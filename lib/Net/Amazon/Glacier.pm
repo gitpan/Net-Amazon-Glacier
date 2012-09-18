@@ -23,11 +23,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =cut
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 
 =head1 SYNOPSIS
@@ -161,6 +161,119 @@ sub upload_archive {
 	}
 }
 
+
+=head1 JOB OPERATIONS
+
+=head2 initiate_archive_retrieval( $vault_name, $archive_id, [
+$description, $sns_topic ] )
+
+Initiates an archive retrieval job. $archive_id is an ID previously
+retrieved from Amazon Glacier. A job description of up to 1,024 printable
+ASCII characters may be supplied. An SNS Topic to send notifications to
+upon job completion may also be supplied.
+
+=cut
+
+sub initiate_archive_retrieval {
+	my ( $self, $vault_name, $archive_id, $description, $sns_topic ) = @_;
+	croak "no vault name given" unless $vault_name;
+	croak "no archive id given" unless $archive_id;
+
+	my $content_raw = {
+		Type => 'archive-retrieval',
+		ArchiveId => $archive_id,
+	};
+
+	$content_raw->{Description} = $description
+		if defined($description);
+
+	$content_raw->{SNSTopic} = $sns_topic
+		if defined($sns_topic);
+
+	my $res = $self->_send_receive(
+		POST => "/-/vaults/$vault_name/jobs",
+		[ ],
+		encode_json($content_raw),
+	);
+
+	return 0 unless $res->is_success;
+	return $res->header('x-amz-job-id');
+}
+
+=head2 initiate_inventory_retrieval( $vault_name, [ $format, $description,
+$sns_topic ] )
+
+Initiates an archive retrieval job. $archive_id is an ID previously
+retrieved from Amazon Glacier. A job description of up to 1,024 printable
+ASCII characters may be supplied. An SNS Topic to send notifications to
+upon job completion may also be supplied.
+
+=cut
+
+sub initiate_inventory_retrieval {
+	my ( $self, $vault_name, $format, $description, $sns_topic ) = @_;
+	croak "no vault name given" unless $vault_name;
+
+	my $content_raw = {
+		Type => 'inventory-retrieval',
+	};
+
+	$content_raw->{Format} = $format
+		if defined($format);
+
+	$content_raw->{Description} = $description
+		if defined($description);
+
+	$content_raw->{SNSTopic} = $sns_topic
+		if defined($sns_topic);
+
+	my $res = $self->_send_receive(
+		POST => "/-/vaults/$vault_name/jobs",
+		[ ],
+		encode_json($content_raw),
+	);
+
+	return 0 unless $res->is_success;
+	return $res->header('x-amz-job-id');
+}
+
+=head2 get_job_output( $vault_name, $job_id, [ $range ] )
+
+Retrieves the output of a job, returns a binary blob. Optional range
+parameter is passed as an HTTP header.
+
+=cut
+
+sub get_job_output {
+	my ( $self, $vault_name, $job_id, $range ) = @_;
+
+	my $headers = [];
+
+	push @$headers, (Range => $range)
+		if defined($range);
+
+	my $res = $self->_send_receive( GET => "/-/vaults/$vault_name/jobs/$job_id/output", $headers );
+	if ( $res->is_success ) {
+		return $res->decoded_content;
+	} else {
+		return undef;
+	}
+}
+
+=head2 describe_job( $vault_name, $job_id )
+
+Retrieves a hashref with information about the requested JobID
+
+=cut
+
+sub describe_job {
+	my ( $self, $vault_name, $job_id ) = @_;
+	my $res = $self->_send_receive( GET => "/-/vaults/$vault_name/jobs/$job_id" );
+	return $self->_decode_and_handle_response( $res );
+}
+
+
+
 # helper functions
 
 sub _decode_and_handle_response {
@@ -215,17 +328,15 @@ The following parts of Amazon's API have not yet been implemented. This is mainl
 
 =item * Multipart upload operations
 
-=item * Job operations
-
 =back
 
 =head1 SEE ALSO
 
 See also Victor Efimov's MT::AWS::Glacier, an application for AWS Glacier synchronization. It is available at L<https://github.com/vsespb/mt-aws-glacier>.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Tim Nordenfur, C<< <tim at gurka.se> >>
+Written and maintained by Tim Nordenfur, C<< <tim at gurka.se> >>. Support for job operations was contributed by Ted Reed at IMVU.
 
 =head1 BUGS
 
