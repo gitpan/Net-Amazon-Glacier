@@ -23,11 +23,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 
 =head1 SYNOPSIS
@@ -50,17 +50,17 @@ The functions are intended to closely reflect Amazon's Glacier API. Please see A
 
 =head1 CONSTRUCTOR
 
-=head2 new( $region, $account_id, $secret )
+=head2 new( $region, $access_key_id, $secret )
 
 =cut
 
 sub new {
 	my $class = shift;
-	my ( $region, $account_id, $secret ) = @_;
+	my ( $region, $access_key_id, $secret ) = @_;
 	my $self = {
 		region => $region,
 		ua     => LWP::UserAgent->new(),
-		sig    => Net::Amazon::Signature::V4->new( $account_id, $secret, $region, 'glacier' ),
+		sig    => Net::Amazon::Signature::V4->new( $access_key_id, $secret, $region, 'glacier' ),
 	};
 	bless $self, $class;
 }
