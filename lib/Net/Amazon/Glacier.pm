@@ -23,11 +23,11 @@ Net::Amazon::Glacier - An implementation of the Amazon Glacier RESTful API.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 
 =head1 SYNOPSIS
@@ -141,6 +141,7 @@ sub upload_archive {
 	open( my $content_fh, '<', $archive_path ) or croak $!;
 	$th->eat_file( $content_fh );
 	close $content_fh;
+	$th->calc_tree;
 
 	my $res = $self->_send_receive(
 		POST => "/-/vaults/$vault_name/archives", 
@@ -203,10 +204,9 @@ sub initiate_archive_retrieval {
 =head2 initiate_inventory_retrieval( $vault_name, [ $format, $description,
 $sns_topic ] )
 
-Initiates an archive retrieval job. $archive_id is an ID previously
-retrieved from Amazon Glacier. A job description of up to 1,024 printable
-ASCII characters may be supplied. An SNS Topic to send notifications to
-upon job completion may also be supplied.
+Initiates an inventory retrieval job. $format is either CSV or JSON (default).
+A job description of up to 1,024 printable ASCII characters may be supplied. An
+SNS Topic to send notifications to upon job completion may also be supplied.
 
 =cut
 
