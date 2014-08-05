@@ -1,12 +1,12 @@
 {
-   "abstract" : "An implementation of the Amazon Glacier RESTful API.",
+   "abstract" : "An implementation of the full Amazon Glacier RESTful 2012-06-01 API.",
    "author" : [
       "Tim Nordenfur <tim@gurka.se>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.6302, CPAN::Meta::Converter version 2.120630",
+   "generated_by" : "ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.142060",
    "license" : [
-      "perl_5"
+      "unknown"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -22,27 +22,30 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "Test::More" : "0"
          }
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "ExtUtils::MakeMaker" : "6.3002"
          }
       },
       "runtime" : {
          "requires" : {
+            "Carp" : "0",
             "Digest::SHA" : "0",
-            "File::Slurp" : "0",
-            "JSON::PP" : "0",
+            "File::Slurp" : "9999.19",
+            "HTTP::Request" : "0",
+            "JSON" : "2.61",
             "LWP::Protocol::https" : "0",
             "LWP::UserAgent" : "0",
             "Net::Amazon::Signature::V4" : "0",
             "Net::Amazon::TreeHash" : "0",
-            "Test::More" : "0"
+            "POSIX" : "0",
+            "perl" : "5.010000"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.13"
+   "version" : "0.15"
 }
